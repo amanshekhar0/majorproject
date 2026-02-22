@@ -66,6 +66,7 @@ interface InterviewState {
     // Session control
     startSession: () => void;
     endSession: (terminated?: boolean, timeUsedSecs?: number) => void;
+    resetSession: () => void;
     getSessionData: () => object;
 
     // Theme
@@ -234,6 +235,30 @@ export const InterviewProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         window.speechSynthesis?.cancel();
     }, []);
 
+    const resetSession = useCallback(() => {
+        setSessionStarted(false);
+        setSessionEnded(false);
+        setTerminated(false);
+        setTimeUsed(0);
+        setCurrentIndex(0);
+        setQuestions(QUESTION_BANK);
+        setCode('');
+        setLanguage('python');
+        setTerminalOutput('');
+        setIsRunning(false);
+        setCodeSubmissions([]);
+        setMcqAnswers([]);
+        setTabSwitchCount(0);
+        setIsAITyping(false);
+        setGeminiHistory([]);
+        setChatHistory([{
+            role: 'assistant',
+            content: "Hi! I'm Alex, your interviewer today. Let's get started — I'll walk you through the questions one by one. Good luck! 🚀",
+            timestamp: Date.now(),
+        }]);
+        window.speechSynthesis?.cancel();
+    }, []);
+
     const getSessionData = useCallback(() => ({
         chatHistory,
         codeSubmissions,
@@ -257,7 +282,7 @@ export const InterviewProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         codeSubmissions,
         mcqAnswers, submitMCQ,
         tabSwitchCount, incrementTabSwitch, setTerminated,
-        startSession, endSession, getSessionData,
+        startSession, endSession, resetSession, getSessionData,
     };
 
     return (

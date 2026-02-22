@@ -32,7 +32,10 @@ export default function ChatPanel() {
         const text = inputText.trim();
         if (!text) return;
         setInputText('');
-        await sendMessage(text, { currentQuestion: currentQuestion?.question });
+        await sendMessage(text, {
+            currentQuestion: currentQuestion?.question,
+            questionType: currentQuestion?.type,
+        });
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

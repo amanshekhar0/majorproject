@@ -24,29 +24,34 @@ export const useAntiCheat = ({
     const faceLandmarkerRef = useRef<unknown>(null);
     const animFrameRef = useRef<number | null>(null);
     const gazeOffRef = useRef(false);
+    // Keep callbacks in refs so they never become effect dependencies
+    const onTerminateRef = useRef(onTerminate);
+    const onTabSwitchRef = useRef(onTabSwitch);
+    onTerminateRef.current = onTerminate;
+    onTabSwitchRef.current = onTabSwitch;
 
     // Tab switch detection
     useEffect(() => {
         if (!enabled) return;
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') {
-                onTabSwitch();
+                onTabSwitchRef.current();
             }
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [enabled, onTabSwitch]);
+    }, [enabled]);
 
-    // React to tab switch count changes
+    // React to tab switch count changes — only runs when count itself changes
     useEffect(() => {
         if (!enabled) return;
         if (tabSwitchCount >= MAX_TAB_SWITCHES) {
             setIsTerminated(true);
-            onTerminate();
+            onTerminateRef.current();
         } else if (tabSwitchCount > 0) {
             setWarningType('tab');
         }
-    }, [tabSwitchCount, enabled, MAX_TAB_SWITCHES, onTerminate]);
+    }, [tabSwitchCount, enabled, MAX_TAB_SWITCHES]);
 
     // Initialize webcam
     const initWebcam = useCallback(async (videoEl: HTMLVideoElement) => {
@@ -72,7 +77,7 @@ export const useAntiCheat = ({
             const faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
                 baseOptions: {
                     modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
-                    delegate: 'GPU',
+                    delegate: 'CPU',
                 },
                 runningMode: 'VIDEO',
                 numFaces: 1,
@@ -86,7 +91,7 @@ export const useAntiCheat = ({
                     animFrameRef.current = requestAnimationFrame(detect);
                     return;
                 }
-                const results = (faceLandmarker as { detectForVideo: (v: HTMLVideoElement, t: number) => { facialTransformationMatrixes?: Array<{ data: Float32Array }> } }).detectForVideo(videoEl, performance.now());
+                const results = (faceLandmarker as { detectForVideo: (v: HTMLVideoElement, t: number) => { facialTransformationMatrixes?: Array<{ data: number[] }> } }).detectForVideo(videoEl, performance.now());
 
                 const matrix = results?.facialTransformationMatrixes?.[0]?.data;
                 if (matrix) {
@@ -117,7 +122,12 @@ export const useAntiCheat = ({
                 animFrameRef.current = requestAnimationFrame(detect);
             };
 
-            videoEl.onloadeddata = () => detect();
+            // If video is already playing/loaded, start immediately; otherwise wait for data
+            if (videoEl.readyState >= 2) {
+                detect();
+            } else {
+                videoEl.onloadeddata = () => detect();
+            }
         } catch (err) {
             console.warn('MediaPipe FaceLandmarker init failed:', err);
         }

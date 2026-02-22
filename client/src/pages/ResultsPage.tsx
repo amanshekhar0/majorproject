@@ -106,7 +106,7 @@ const FALLBACK_EVALUATION: EvaluationResult = {
 export default function ResultsPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { getSessionData } = useInterview();
+    const { getSessionData, resetSession } = useInterview();
     const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -336,7 +336,7 @@ export default function ResultsPage() {
                         Back to Home
                     </button>
                     <button
-                        onClick={() => navigate('/arena')}
+                        onClick={() => { resetSession(); navigate('/arena'); }}
                         className="btn-purple justify-center px-8 py-3"
                     >
                         <Zap size={16} />

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInterview } from '../context/InterviewContext';
 import { useTimer } from '../hooks/useTimer';
@@ -42,11 +42,11 @@ export default function ArenaPage() {
         onExpire: handleExpire,
     });
 
-    const handleTerminate = () => {
+    const handleTerminate = useCallback(() => {
         endSession(true, getElapsedSeconds());
         setTerminated(true);
         navigate('/results', { state: getSessionData() });
-    };
+    }, [endSession, getElapsedSeconds, setTerminated, navigate, getSessionData]);
 
     const { warningType, dismissWarning, initWebcam, initGazeDetection } = useAntiCheat({
         onTerminate: handleTerminate,
