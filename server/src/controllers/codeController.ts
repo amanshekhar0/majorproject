@@ -1,14 +1,58 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
 
-const PISTON_API = 'https://emkc.org/api/v2/piston/execute';
-
-const LANGUAGE_MAP: Record<string, { language: string; version: string }> = {
-    python: { language: 'python', version: '3.10.0' },
-    java: { language: 'java', version: '15.0.2' },
-    cpp: { language: 'c++', version: '10.2.0' },
-    javascript: { language: 'javascript', version: '18.15.0' },
+// Judge0 language IDs – https://ce.judge0.com/languages
+const LANGUAGE_ID_MAP: Record<string, number> = {
+    python: 71,  // Python 3.8.1
+    java: 62,  // Java (OpenJDK 13.0.1)
+    cpp: 54,  // C++ (GCC 9.2.0)
+    c: 50,  // C (GCC 9.2.0)
+    javascript: 63,  // JavaScript (Node.js 12.14.0)
 };
+
+/** Read at request time so dotenv has already populated process.env */
+const getHeaders = () => ({
+    'content-type': 'application/json',
+    'X-RapidAPI-Key': process.env.RAPIDAPI_KEY || '',
+    'X-RapidAPI-Host': process.env.RAPIDAPI_HOST || 'judge029.p.rapidapi.com',
+});
+
+const getBase = () =>
+    `https://${process.env.RAPIDAPI_HOST || 'judge029.p.rapidapi.com'}`;
+
+/** Poll Judge0 until execution finishes (status.id > 2 = not queued/processing) */
+async function pollResult(token: string, maxAttempts = 10): Promise<Record<string, unknown>> {
+    for (let i = 0; i < maxAttempts; i++) {
+        await new Promise(r => setTimeout(r, 1500));
+        const { data } = await axios.get(
+            `${getBase()}/submissions/${token}?base64_encoded=true&fields=*`,
+            { headers: getHeaders(), timeout: 10000 }
+        );
+        if (data.status && data.status.id > 2) {
+            return data;
+        }
+    }
+    throw new Error('Code execution timed out after polling');
+}
+
+/**
+ * Judge0 saves Java files as "Main.java", so the public class MUST be named Main.
+ * This function renames any `public class Foo` → `public class Main` automatically,
+ * and also replaces `new Foo(` / `Foo.` references with `Main` so the code still compiles.
+ */
+function normalizeJavaCode(code: string): string {
+    // Find the name of the public class (if any)
+    const match = code.match(/public\s+class\s+(\w+)/);
+    if (!match) return code;
+    const className = match[1];
+    if (className === 'Main') return code; // already correct
+
+    // Replace class declaration and all usages of that class name
+    return code
+        .replace(new RegExp(`\\bpublic\\s+class\\s+${className}\\b`, 'g'), 'public class Main')
+        .replace(new RegExp(`\\bnew\\s+${className}\\s*\\(`, 'g'), 'new Main(')
+        .replace(new RegExp(`\\b${className}\.`, 'g'), 'Main.');
+}
 
 export const runCode = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -23,41 +67,64 @@ export const runCode = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const langConfig = LANGUAGE_MAP[language.toLowerCase()];
-        if (!langConfig) {
+        const langId = LANGUAGE_ID_MAP[language.toLowerCase()];
+        if (!langId) {
             res.status(400).json({
-                error: `Unsupported language: ${language}. Supported: ${Object.keys(LANGUAGE_MAP).join(', ')}`,
+                error: `Unsupported language: ${language}. Supported: ${Object.keys(LANGUAGE_ID_MAP).join(', ')}`,
             });
             return;
         }
 
-        const payload = {
-            language: langConfig.language,
-            version: langConfig.version,
-            files: [{ content: code }],
-            stdin: stdin || '',
-            args: [],
-            compile_timeout: 10000,
-            run_timeout: 5000,
-            compile_memory_limit: -1,
-            run_memory_limit: -1,
-        };
+        const apiKey = process.env.RAPIDAPI_KEY || '';
+        if (!apiKey) {
+            res.status(500).json({ error: 'RapidAPI key not configured on server' });
+            return;
+        }
 
-        const response = await axios.post(PISTON_API, payload, {
-            timeout: 20000,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        // For Java: Judge0 saves file as Main.java, so public class must be named Main
+        const sourceCode = language.toLowerCase() === 'java' ? normalizeJavaCode(code) : code;
 
-        const { run, compile } = response.data;
+        // Submit with base64 encoding to handle all character sets
+        const { data: submission } = await axios.post(
+            `${getBase()}/submissions?base64_encoded=true&wait=false`,
+            {
+                source_code: Buffer.from(sourceCode).toString('base64'),
+                language_id: langId,
+                stdin: stdin ? Buffer.from(stdin).toString('base64') : '',
+            },
+            { headers: getHeaders(), timeout: 15000 }
+        );
+
+        const token: string = submission.token;
+        if (!token) {
+            res.status(502).json({ error: 'No token returned from Judge0' });
+            return;
+        }
+
+        // Step 2 – Poll for result
+        const result = await pollResult(token);
+
+        // Decode base64 output fields
+        const b64decode = (v: unknown) =>
+            typeof v === 'string' && v ? Buffer.from(v, 'base64').toString('utf8') : '';
+
+        const stdout = b64decode(result.stdout);
+        const stderr = b64decode(result.stderr);
+        const compileOut = b64decode(result.compile_output);
+        const exitCode = (result.exit_code as number) ?? 0;
+        const statusDesc = (result.status as { description: string })?.description || '';
+
+        console.log(`[Judge0] lang=${language} status="${statusDesc}" exit=${exitCode}`);
 
         res.json({
-            success: true,
-            stdout: run?.stdout || '',
-            stderr: run?.stderr || '',
-            compile_output: compile?.stderr || compile?.stdout || '',
-            exit_code: run?.code ?? 0,
-            cpu_time: run?.cpu_time,
-            memory: run?.memory,
+            success: exitCode === 0,
+            stdout,
+            stderr,
+            compile_output: compileOut,
+            exit_code: exitCode,
+            status: statusDesc,
+            time: result.time,
+            memory: result.memory,
         });
     } catch (err: unknown) {
         console.error('Code execution error:', err);
