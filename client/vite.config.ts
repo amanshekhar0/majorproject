@@ -7,10 +7,11 @@ export default defineConfig({
         // Strip broken sourceMappingURL from MediaPipe (the .map file doesn't exist in the NPM package)
         {
             name: 'remove-mediapipe-sourcemap',
-            transform(code: string, id: string) {
+            enforce: 'pre',
+            transform(code, id) {
                 if (id.includes('@mediapipe/tasks-vision')) {
                     return {
-                        code: code.replace(/\/\/# sourceMappingURL=.*\.map/g, ''),
+                        code: code.replace(/\/\/# sourceMappingURL=.*\s*$/g, ''),
                         map: null,
                     };
                 }

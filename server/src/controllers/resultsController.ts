@@ -1,13 +1,13 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-import { Request, Response } from 'express';
-import OpenAI from 'openai';
+import { Request, Response } from "express";
+import OpenAI from "openai";
 
 const getGrok = () => {
-  const key = process.env.XAI_API_KEY;
-  if (!key) throw new Error('XAI_API_KEY is not set in .env');
-  return new OpenAI({ apiKey: key, baseURL: 'https://api.groq.com/openai/v1' });
+  const key = process.env.GROQ_API_KEY || process.env.XAI_API_KEY;
+  if (!key) throw new Error("GROQ_API_KEY is not set in .env");
+  return new OpenAI({ apiKey: key, baseURL: "https://api.groq.com/openai/v1" });
 };
 
 interface CodeSubmission {
@@ -25,9 +25,15 @@ interface SessionData {
   timeUsed: number;
   terminated: boolean;
   projects: Array<{ name: string; description: string }>;
+  faceViolationCount?: number;
+  noiseAlertCount?: number;
+  difficulty?: string;
 }
 
-export const evaluateSession = async (req: Request, res: Response): Promise<void> => {
+export const evaluateSession = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const sessionData = req.body as SessionData;
 
@@ -38,20 +44,34 @@ SESSION DATA:
 - Time Used: ${Math.floor(sessionData.timeUsed / 60)} minutes
 - Tab Switches: ${sessionData.tabSwitchCount}
 - Session Terminated Early: ${sessionData.terminated}
-- Projects: ${sessionData.projects?.map(p => p.name).join(', ') || 'None'}
+- Difficulty: ${sessionData.difficulty || "unknown"}
+- Face presence check-ins logged: ${sessionData.faceViolationCount ?? 0}
+- Sustained loud background noise events: ${sessionData.noiseAlertCount ?? 0}
+- Projects: ${sessionData.projects?.map((p) => p.name).join(", ") || "None"}
 
 CODE SUBMISSIONS:
-${sessionData.codeSubmissions?.map((s, i) => `
+${
+  sessionData.codeSubmissions
+    ?.map(
+      (s, i) => `
 Submission ${i + 1} (${s.language}):
 Question: ${s.question}
 Code:
 \`\`\`${s.language}
 ${s.code}
 \`\`\`
-`).join('\n') || 'No code submitted'}
+`,
+    )
+    .join("\n") || "No code submitted"
+}
 
 CHAT HISTORY SUMMARY:
-${sessionData.chatHistory?.slice(-10).map(h => `${h.role}: ${h.content}`).join('\n') || 'No chat history'}
+${
+  sessionData.chatHistory
+    ?.slice(-10)
+    .map((h) => `${h.role}: ${h.content}`)
+    .join("\n") || "No chat history"
+}
 
 Provide a comprehensive evaluation. Respond ONLY with valid JSON:
 {
@@ -79,7 +99,8 @@ Provide a comprehensive evaluation. Respond ONLY with valid JSON:
     "mcq": <0-100>,
     "coding": <0-100>,
     "communication": <0-100>,
-    "resumeDepth": <0-100>
+    "resumeDepth": <0-100>,
+    "behavioral": <0-100>
   },
   "recommendation": "<Strong Hire|Hire|Maybe|No Hire>",
   "nextSteps": "<What the candidate should study or practice>"
@@ -87,22 +108,22 @@ Provide a comprehensive evaluation. Respond ONLY with valid JSON:
 
     const client = getGrok();
     const result = await client.chat.completions.create({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-      messages: [{ role: 'user', content: prompt }],
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
     });
 
-    const text = result.choices[0]?.message?.content || '';
+    const text = result.choices[0]?.message?.content || "";
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      res.status(500).json({ error: 'Failed to generate evaluation report' });
+      res.status(500).json({ error: "Failed to generate evaluation report" });
       return;
     }
 
     const evaluation = JSON.parse(jsonMatch[0]);
     res.json({ success: true, evaluation });
   } catch (err: unknown) {
-    console.error('Results evaluation error:', err);
-    res.status(500).json({ error: 'Failed to evaluate session' });
+    console.error("Results evaluation error:", err);
+    res.status(500).json({ error: "Failed to evaluate session" });
   }
 };

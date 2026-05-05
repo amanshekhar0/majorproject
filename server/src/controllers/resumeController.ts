@@ -7,8 +7,8 @@ import pdfParse from 'pdf-parse';
 import OpenAI from 'openai';
 
 const getGrok = () => {
-    const key = process.env.XAI_API_KEY;
-    if (!key) throw new Error('XAI_API_KEY is not set in .env');
+    const key = process.env.GROQ_API_KEY || process.env.XAI_API_KEY;
+    if (!key) throw new Error('GROQ_API_KEY is not set in .env');
     return new OpenAI({ apiKey: key, baseURL: 'https://api.groq.com/openai/v1' });
 };
 
@@ -77,7 +77,7 @@ ${pdfText.substring(0, 8000)}`;
 
         const client = getGrok();
         const result = await client.chat.completions.create({
-            model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+            model: 'llama-3.3-70b-versatile',
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.3,
         });
@@ -90,9 +90,18 @@ ${pdfText.substring(0, 8000)}`;
         }
 
         const parsed = JSON.parse(jsonMatch[0]);
+        // Normalize: AI sometimes returns technologies as a comma-separated string
+        const projects = (parsed.projects || []).map((p: Record<string, unknown>) => ({
+            ...p,
+            technologies: Array.isArray(p.technologies)
+                ? p.technologies
+                : typeof p.technologies === 'string'
+                    ? (p.technologies as string).split(',').map((s: string) => s.trim()).filter(Boolean)
+                    : [],
+        }));
         res.json({
             success: true,
-            projects: parsed.projects,
+            projects,
             resumeLength: pdfText.length,
         });
     } catch (err: unknown) {
