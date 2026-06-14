@@ -1,8 +1,11 @@
 import axios from "axios";
 import type { Question } from "../data/questions";
 
+const rawBase = ((import.meta.env as any).VITE_API_BASE || "").replace(/\/$/, "");
+const API_BASE = rawBase ? (rawBase.endsWith("/api") ? rawBase : `${rawBase}/api`) : "/api";
+
 const API = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE,
   timeout: 30000,
   headers: { "Content-Type": "application/json" },
 });
@@ -57,7 +60,7 @@ export const uploadResume = async (
 ): Promise<{ projects: Project[]; resumeLength: number }> => {
   const formData = new FormData();
   formData.append("resume", file);
-  const { data } = await axios.post("/api/resume/upload", formData, {
+  const { data } = await API.post("/resume/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     timeout: 60000,
   });
