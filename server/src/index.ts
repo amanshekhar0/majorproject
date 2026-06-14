@@ -26,6 +26,7 @@ const limiter = rateLimit({
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
+  "https://ai-mock-interview-woad-ten.vercel.app",
   ...(process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
     : []),
