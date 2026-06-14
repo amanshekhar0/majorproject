@@ -26,6 +26,10 @@ interface ResumeModalProps {
   onStart: () => void;
 }
 
+const GRADIENT =
+  "linear-gradient(100deg, #FFFFFF, #737373, #E5E5E5, #FFFFFF)";
+const STEP_ORDER = ["difficulty", "profile", "resume"] as const;
+
 export default function ResumeModal({ onClose, onStart }: ResumeModalProps) {
   const {
     setProjects,
@@ -58,7 +62,6 @@ export default function ResumeModal({ onClose, onStart }: ResumeModalProps) {
   const text = isDark ? "#f0f0f0" : "#111";
   const muted = isDark ? "#555" : "#999";
   const subtleBg = isDark ? "#181818" : "#f7f7f7";
-  const bg = isDark ? "#111" : "#fff";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback((f: File) => {
@@ -213,14 +216,45 @@ export default function ResumeModal({ onClose, onStart }: ResumeModalProps) {
 
       {/* Modal */}
       <motion.div
-        style={{ background: bg, border: `1px solid ${border}`, color: text }}
-        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
+        style={{
+          background: isDark ? "rgba(12,12,22,0.92)" : "rgba(255,255,255,0.97)",
+          border: `1px solid ${border}`,
+          color: text,
+          backdropFilter: "blur(18px)",
+          boxShadow: isDark
+            ? "0 40px 110px -30px #000"
+            : "0 30px 80px -30px rgba(80,40,160,0.45)",
+        }}
+        className="relative w-full max-w-md rounded-2xl overflow-hidden"
         initial={{ scale: 0.95, opacity: 0, y: 16 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 16 }}
         transition={{ type: "spring", damping: 28, stiffness: 350 }}
       >
-        <div className="p-7">
+        {/* gradient top accent */}
+        <div style={{ height: 4, background: GRADIENT }} />
+        {/* step progress */}
+        <div className="flex gap-1.5 px-7 pt-5">
+          {STEP_ORDER.map((s, i) => {
+            const active = i <= STEP_ORDER.indexOf(step);
+            return (
+              <div
+                key={s}
+                className="h-1 flex-1 rounded-full overflow-hidden"
+                style={{ background: isDark ? "#2a2a2a" : "#e5e5e5" }}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{ width: active ? "100%" : "0%" }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="h-full"
+                  style={{ background: GRADIENT }}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div className="px-7 pb-7 pt-5">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div>
@@ -275,56 +309,65 @@ export default function ResumeModal({ onClose, onStart }: ResumeModalProps) {
                 className="space-y-3"
               >
                 {DIFFICULTIES.map(
-                  ({ level, label, desc, icon, color, qCount }) => (
-                    <button
-                      key={level}
-                      onClick={() => setDifficulty(level)}
-                      className="w-full flex items-center gap-4 p-4 rounded-xl transition-all duration-150 text-left"
-                      style={{
-                        border:
-                          difficulty === level
-                            ? `2px solid ${color}`
+                  ({ level, label, desc, icon, qCount }) => {
+                    const isActive = difficulty === level;
+                    const activeColor = isDark ? "#ffffff" : "#171717";
+                    const badgeBg = isActive
+                      ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)")
+                      : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)");
+                    const iconColor = isActive ? activeColor : muted;
+
+                    return (
+                      <button
+                        key={level}
+                        onClick={() => setDifficulty(level)}
+                        className="w-full flex items-center gap-4 p-4 rounded-xl transition-all duration-150 text-left"
+                        style={{
+                          border: isActive
+                            ? `2px solid ${activeColor}`
                             : `1px solid ${border}`,
-                        background:
-                          difficulty === level ? `${color}14` : subtleBg,
-                      }}
-                    >
-                      <span style={{ color }}>{icon}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="font-semibold text-sm"
-                            style={{ color: text }}
-                          >
-                            {label}
-                          </span>
-                          <span
-                            className="text-xs px-1.5 py-0.5 rounded-full"
-                            style={{ background: `${color}22`, color }}
-                          >
-                            {qCount} questions
-                          </span>
+                          background: isActive
+                            ? (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)")
+                            : subtleBg,
+                        }}
+                      >
+                        <span style={{ color: iconColor }}>{icon}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="font-semibold text-sm"
+                              style={{ color: text }}
+                            >
+                              {label}
+                            </span>
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                              style={{ background: badgeBg, color: isActive ? activeColor : muted }}
+                            >
+                              {qCount} questions
+                            </span>
+                          </div>
+                          <p className="text-xs mt-0.5" style={{ color: muted }}>
+                            {desc}
+                          </p>
                         </div>
-                        <p className="text-xs mt-0.5" style={{ color: muted }}>
-                          {desc}
-                        </p>
-                      </div>
-                      {difficulty === level && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="w-4 h-4 rounded-full flex-shrink-0"
-                          style={{ background: color }}
-                        />
-                      )}
-                    </button>
-                  ),
+                        {isActive && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-4 h-4 rounded-full flex-shrink-0"
+                            style={{ background: activeColor }}
+                          />
+                        )}
+                      </button>
+                    );
+                  }
                 )}
 
                 <button
                   onClick={() => setStep("profile")}
                   className="w-full mt-4 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-85 flex items-center justify-center gap-2"
-                  style={{ background: text, color: bg }}
+                  style={{ background: GRADIENT, color: "#000000" }}
                 >
                   Continue <ChevronRight size={16} />
                 </button>
@@ -415,7 +458,7 @@ export default function ResumeModal({ onClose, onStart }: ResumeModalProps) {
                     setStep("resume");
                   }}
                   className="w-full py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
-                  style={{ background: text, color: bg }}
+                  style={{ background: GRADIENT, color: "#000000" }}
                 >
                   Continue to resume <ChevronRight size={16} />
                 </button>
@@ -580,7 +623,7 @@ export default function ResumeModal({ onClose, onStart }: ResumeModalProps) {
                     <button
                       onClick={handleStart}
                       className="w-full py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-85"
-                      style={{ background: text, color: bg }}
+                      style={{ background: GRADIENT, color: "#000000" }}
                     >
                       Begin Interview →
                     </button>
@@ -589,7 +632,7 @@ export default function ResumeModal({ onClose, onStart }: ResumeModalProps) {
                       onClick={handleUpload}
                       disabled={!file || status === "uploading"}
                       className="w-full py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      style={{ background: text, color: bg }}
+                      style={{ background: GRADIENT, color: "#000000" }}
                     >
                       {status === "uploading" ? (
                         <>

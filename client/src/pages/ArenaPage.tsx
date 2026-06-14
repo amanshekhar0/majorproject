@@ -14,15 +14,15 @@ import { speakInterviewerText } from "../utils/speechOut";
 const INTERVIEW_DURATION = 60 * 60;
 
 const C = {
-  bg: "#111111",
-  sidebar: "#1a1a1a",
-  border: "#2a2a2a",
-  header: "#141414",
-  centerBg: "#1e1e1e",
-  text: "#e5e5e5",
-  muted: "#888888",
-  blue: "#3b82f6",
-  green: "#22c55e",
+  bg: "#050505",
+  sidebar: "#0C0C0C",
+  border: "#1F1F1F",
+  header: "#0C0C0C",
+  centerBg: "#050505",
+  text: "#F5F5F5",
+  muted: "#A3A3A3",
+  blue: "#FFFFFF",
+  green: "#10b981",
   red: "#ef4444",
   yellow: "#f59e0b",
 };
@@ -153,12 +153,12 @@ export default function ArenaPage() {
         <div className="flex items-center gap-3">
           <div
             className="w-7 h-7 rounded-md flex items-center justify-center"
-            style={{ background: C.blue }}
+            style={{ background: "linear-gradient(100deg, #FFFFFF, #737373, #E5E5E5)" }}
           >
-            <span className="text-white text-xs font-black">AI</span>
+            <span className="text-xs font-black" style={{ color: "#050505" }}>AI</span>
           </div>
           <span className="font-semibold text-sm" style={{ color: C.text }}>
-            InterviewMaster AI
+            InterviewAI
           </span>
           {tabSwitchCount > 0 && (
             <span
@@ -202,8 +202,11 @@ export default function ArenaPage() {
           </div>
           <button
             onClick={handleFinish}
-            className="text-xs px-4 py-1.5 rounded-md font-semibold hover:opacity-80 transition-opacity"
-            style={{ background: C.green, color: "#fff" }}
+            className="text-xs px-4 py-1.5 rounded-md font-bold hover:opacity-90 transition-opacity"
+            style={{
+              background: "#ffffff",
+              color: "#050505",
+            }}
           >
             Submit Assessment
           </button>
@@ -220,6 +223,17 @@ export default function ArenaPage() {
           </button>
         </div>
       </header>
+
+      {/* Question progress */}
+      <div className="flex-shrink-0 h-[3px] w-full" style={{ background: C.border }}>
+        <div
+          className="h-full transition-[width] duration-500"
+          style={{
+            width: `${((currentIndex + 1) / Math.max(questions.length, 1)) * 100}%`,
+            backgroundImage: "linear-gradient(100deg,#FFFFFF,#737373,#E5E5E5)",
+          }}
+        />
+      </div>
 
       {/* ── Body ── */}
       <div className="flex-1 flex overflow-hidden">
@@ -264,7 +278,7 @@ export default function ArenaPage() {
             {/* Right: code editor + console */}
             <div
               className="flex-1 flex flex-col overflow-hidden"
-              style={{ background: "#1e1e1e" }}
+              style={{ background: "#0A0C12" }}
             >
               <CodingPanel />
             </div>
@@ -285,9 +299,9 @@ export default function ArenaPage() {
             </div>
             <div
               style={{ height: "42%" }}
-              className="overflow-hidden flex flex-col border-t border-[#2a2a2a] bg-[#1a1a1a]"
+              className="overflow-hidden flex flex-col border-t border-[#1C2129] bg-[#0C0E15]"
             >
-              <div className="max-w-4xl mx-auto w-full h-full border-x border-[#2a2a2a]">
+              <div className="max-w-4xl mx-auto w-full h-full border-x border-[#1C2129]">
                 <ChatPanel />
               </div>
             </div>
@@ -356,7 +370,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
     if (isCorrect) {
       const praises = [
         "Excellent work. That is precisely correct.",
-        "Impression selection. You've clearly grasped the core concept here.",
+        "Impressive choice. You've clearly grasped the core concept here.",
         "Correct. Your reasoning aligns perfectly with industry best practices.",
         "That's exactly right. Well reasoned.",
       ];
@@ -477,7 +491,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
       <div className={isCentered ? "text-center" : ""}>
         <span
           className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded mb-2 inline-block"
-          style={{ background: "#1e3a5a", color: "#60a5fa" }}
+          style={{ background: "rgba(255, 255, 255, 0.08)", color: "#FFFFFF" }}
         >
           {typeLabel[currentQuestion.type] || currentQuestion.type}
         </span>
@@ -498,11 +512,11 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
       {currentQuestion.code && (
         <div
           className="rounded-md overflow-hidden"
-          style={{ background: "#141414", border: "1px solid #2a2a2a" }}
+          style={{ background: "#0C0C0C", border: "1px solid #1F1F1F" }}
         >
           <div
             className="px-3 py-2 flex items-center gap-1.5"
-            style={{ borderBottom: "1px solid #2a2a2a" }}
+            style={{ borderBottom: "1px solid #1F1F1F" }}
           >
             {["#ef4444", "#f59e0b", "#22c55e"].map((c) => (
               <div
@@ -514,7 +528,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
           </div>
           <pre
             className="p-4 text-xs font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap"
-            style={{ color: "#7dd3fc" }}
+            style={{ color: "#E5E5E5" }}
           >
             {currentQuestion.code}
           </pre>
@@ -537,27 +551,27 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
                 className="w-full text-left px-3 py-2.5 rounded-lg text-xs flex items-center gap-2.5 transition-colors"
                 style={{
                   background: isCorrect
-                    ? "#14321e"
+                    ? "rgba(16,185,129,0.1)"
                     : isWrong
-                      ? "#3a1818"
+                      ? "rgba(239,68,68,0.1)"
                       : isSelected
-                        ? "#1e2a3a"
-                        : "#1a1a1a",
-                  border: `1px solid ${isCorrect ? "#22c55e" : isWrong ? "#ef4444" : isSelected ? "#3b82f6" : "#2a2a2a"}`,
+                        ? "rgba(255,255,255,0.06)"
+                        : "#0C0C0C",
+                  border: `1px solid ${isCorrect ? "#10b981" : isWrong ? "#ef4444" : isSelected ? "#FFFFFF" : "#1F1F1F"}`,
                   color: isCorrect
                     ? "#86efac"
                     : isWrong
                       ? "#fca5a5"
                       : isSelected
-                        ? "#93c5fd"
-                        : "#ccc",
+                        ? "#FFFFFF"
+                        : "#F5F5F5",
                 }}
               >
                 <span
                   className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                   style={{
-                    background: isSelected ? "#3b82f6" : "#252525",
-                    color: isSelected ? "#fff" : "#777",
+                    background: isSelected ? "#FFFFFF" : "#1F1F1F",
+                    color: isSelected ? "#050505" : "#A3A3A3",
                   }}
                 >
                   {["A", "B", "C", "D"][i]}
@@ -570,7 +584,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
             onClick={handleMCQSubmit}
             disabled={!selectedMCQ || !!mcqResult}
             className="mt-1 w-full py-2.5 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-30"
-            style={{ background: "#3b82f6", color: "#fff" }}
+            style={{ background: "#FFFFFF", color: "#050505" }}
           >
             {mcqResult === "correct"
               ? "✅ Correct"
@@ -591,7 +605,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
             value={textAnswer}
             onChange={(e) => setTextAnswer(e.target.value)}
             placeholder="Situation… Task… Action… Result…"
-            className="w-full bg-[#141414] border border-[#2a2a2a] rounded-lg p-3 text-xs text-[#ccc] outline-none focus:border-[#3b82f6] transition-colors resize-none"
+            className="w-full bg-[#0C0C0C] border border-[#1F1F1F] rounded-lg p-3 text-xs text-[#ccc] outline-none focus:border-[#FFFFFF] transition-colors resize-none"
             rows={5}
           />
           <button
@@ -599,7 +613,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
             onClick={() => handleBehavioralSubmit()}
             disabled={!textAnswer.trim()}
             className="w-full py-2.5 rounded-lg text-xs font-semibold transition-all shadow-lg active:scale-[0.98] disabled:opacity-30"
-            style={{ background: "#4338ca", color: "#fff" }}
+            style={{ background: "#FFFFFF", color: "#050505" }}
           >
             Share reflection & continue
           </button>
@@ -620,7 +634,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
                     ? "What will be the output?..."
                     : "Provide the fix or corrected code..."
                 }
-                className="w-full bg-[#141414] border border-[#2a2a2a] rounded-lg p-3 text-xs text-[#ccc] outline-none focus:border-[#3b82f6] transition-colors resize-none"
+                className="w-full bg-[#0C0C0C] border border-[#1F1F1F] rounded-lg p-3 text-xs text-[#ccc] outline-none focus:border-[#FFFFFF] transition-colors resize-none"
                 rows={3}
               />
             </div>
@@ -628,7 +642,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
               onClick={handleTextSubmit}
               disabled={!textAnswer.trim() || !!mcqResult}
               className="w-full py-2.5 rounded-lg text-xs font-semibold transition-all shadow-lg active:scale-[0.98] disabled:opacity-30"
-              style={{ background: "#3b82f6", color: "#fff" }}
+              style={{ background: "#FFFFFF", color: "#050505" }}
             >
               {mcqResult === "correct"
                 ? "✅ Correct"
@@ -655,7 +669,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
               onClick={() => sendHint(btn.hint)}
               className="text-xs px-3 py-1.5 rounded-md hover:opacity-70 transition-opacity"
               style={{
-                background: "#252525",
+                background: "#161A22",
                 color: "#aaa",
                 border: "1px solid #333",
               }}
@@ -671,9 +685,9 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
         <div
           className="text-xs p-3 rounded-md"
           style={{
-            background: "#1a2535",
-            border: "1px solid #1e3a5f",
-            color: "#60a5fa",
+            background: "rgba(255, 255, 255, 0.03)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            color: "#A3A3A3",
           }}
         >
           💡 Write your solution in the code editor on the right. Click{" "}
@@ -693,7 +707,7 @@ function QuestionDetail({ isCentered }: { isCentered?: boolean }) {
         <button
           onClick={goNextQuestion}
           className="text-xs hover:opacity-80 transition-opacity"
-          style={{ color: "#3b82f6" }}
+          style={{ color: "#FFFFFF" }}
         >
           Skip to next →
         </button>

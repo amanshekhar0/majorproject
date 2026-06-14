@@ -25,13 +25,13 @@ const DIFF_COLOR: Record<string, string> = {
 
 // Professional arena colours
 const C = {
-    sidebar: '#1a1a1a',
-    border: '#2a2a2a',
-    activeRow: '#1e2a3a',
-    activeBorder: '#3b82f6',
-    text: '#e5e5e5',
-    muted: '#777',
-    sectionLabel: '#555',
+    sidebar: '#0C0C0C',
+    border: '#1F1F1F',
+    activeRow: 'rgba(255, 255, 255, 0.05)',
+    activeBorder: '#FFFFFF',
+    text: '#F5F5F5',
+    muted: '#A3A3A3',
+    sectionLabel: '#737373',
 };
 
 export default function QuestionPanel() {
@@ -95,9 +95,9 @@ export default function QuestionPanel() {
                                 {/* Icon */}
                                 <div
                                     className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
-                                    style={{ background: isActive ? '#1e3a5a' : '#252525' }}
+                                    style={{ background: isActive ? '#262626' : '#171717' }}
                                 >
-                                    <Icon size={12} style={{ color: isActive ? '#60a5fa' : C.muted }} />
+                                    <Icon size={12} style={{ color: isActive ? '#FFFFFF' : C.muted }} />
                                 </div>
 
                                 {/* Label */}

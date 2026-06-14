@@ -11,6 +11,11 @@ export const useTimer = ({ initialSeconds, onExpire }: UseTimerOptions) => {
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const expiredRef = useRef(false);
 
+    // Keep the latest onExpire in a ref so the ticking effect never re-subscribes
+    // when the parent passes a new (non-memoized) callback on every render.
+    const onExpireRef = useRef(onExpire);
+    onExpireRef.current = onExpire;
+
     const start = useCallback(() => setIsRunning(true), []);
     const pause = useCallback(() => setIsRunning(false), []);
     const stop = useCallback(() => {
@@ -28,7 +33,7 @@ export const useTimer = ({ initialSeconds, onExpire }: UseTimerOptions) => {
                         setIsRunning(false);
                         if (!expiredRef.current) {
                             expiredRef.current = true;
-                            onExpire?.();
+                            onExpireRef.current?.();
                         }
                         return 0;
                     }
@@ -41,7 +46,7 @@ export const useTimer = ({ initialSeconds, onExpire }: UseTimerOptions) => {
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [isRunning, onExpire]);
+    }, [isRunning]);
 
     const formatTime = (secs: number) => {
         const m = Math.floor(secs / 60).toString().padStart(2, '0');

@@ -21,10 +21,20 @@ const limiter = rateLimit({
   message: { error: "Too many requests, please try again later." },
 });
 
+// Allowed CORS origins: localhost dev defaults plus any comma-separated
+// list supplied via CORS_ORIGINS (e.g. a deployed frontend URL).
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  ...(process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+    : []),
+];
+
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
@@ -41,27 +51,58 @@ app.use("/api/user", userRoutes);
 
 // Health check
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+  res.json({
+    status: "ok",
+    dbConnected: mongoose.connection.readyState === 1,
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// MongoDB connection
+// 404 for unknown API routes
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
+// Global error handler (e.g. multer file-type/size rejections)
+app.use(
+  (
+    err: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    console.error("Unhandled error:", err);
+    res.status(500).json({ error: err.message || "Internal server error" });
+  },
+);
+
+// MongoDB connection — fail fast so the API still boots when the DB is down.
 const connectDB = async () => {
   try {
     const uri =
       process.env.MONGODB_URI || "mongodb://localhost:27017/ai-interview";
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
     console.log("✅ MongoDB connected");
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err);
-    // Continue without DB - not all features require it
+    // Continue without DB - interview flow works in-memory; only analytics need it
   }
 };
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📱 Environment: ${process.env.NODE_ENV}`);
-  });
+// Start listening immediately; the DB connects in the background.
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📱 Environment: ${process.env.NODE_ENV}`);
 });
+connectDB();
+
+// Release the port promptly on reload/shutdown so dev-watch restarts
+// (tsx) don't hit EADDRINUSE.
+const shutdown = () => {
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1500).unref();
+};
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
 
 export default app;

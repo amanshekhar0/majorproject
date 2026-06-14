@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "autoPort": true,
+  "configurations": [
+    {
+      "name": "portfolio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "C:/Users/asus/OneDrive/Desktop/projects/aman/protfolio/frontend"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "C:/Users/asus/OneDrive/Desktop/projects/majorproject/client", "--", "--port", "5311", "--strictPort"],
+      "port": 5311,
+      "autoPort": false
+    }
+  ]
+}

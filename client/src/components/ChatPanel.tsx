@@ -5,14 +5,14 @@ import { useInterview } from '../context/InterviewContext';
 import { useSpeech } from '../hooks/useSpeech';
 
 const C = {
-    bg: '#1a1a1a',
-    border: '#2a2a2a',
-    inputBg: '#111',
-    text: '#e5e5e5',
-    muted: '#777',
-    blue: '#3b82f6',
-    aiBubbleBg: '#252525',
-    userBubbleBg: '#1e3a5a',
+    bg: '#0C0C0C',
+    border: '#1F1F1F',
+    inputBg: '#050505',
+    text: '#F5F5F5',
+    muted: '#A3A3A3',
+    blue: '#FFFFFF',
+    aiBubbleBg: '#171717',
+    userBubbleBg: '#262626',
 };
 
 export default function ChatPanel() {
@@ -59,7 +59,7 @@ export default function ChatPanel() {
             >
                 <div
                     className="w-6 h-6 rounded-full flex items-center justify-center"
-                    style={{ background: '#1e3a5a' }}
+                    style={{ background: '#171717' }}
                 >
                     <Bot size={12} style={{ color: C.blue }} />
                 </div>
@@ -85,7 +85,7 @@ export default function ChatPanel() {
                             <div
                                 className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
                                 style={{
-                                    background: msg.role === 'assistant' ? '#1e3a5a' : '#252525',
+                                    background: msg.role === 'assistant' ? '#171717' : '#262626',
                                 }}
                             >
                                 {msg.role === 'assistant'
@@ -99,8 +99,8 @@ export default function ChatPanel() {
                                 className="text-xs leading-relaxed px-3 py-2 rounded-xl max-w-[82%] whitespace-pre-wrap"
                                 style={{
                                     background: msg.role === 'assistant' ? C.aiBubbleBg : C.userBubbleBg,
-                                    color: C.text,
-                                    border: `1px solid ${msg.role === 'assistant' ? '#333' : '#1e4070'}`,
+                                    color: msg.role === 'assistant' ? C.text : '#050505',
+                                    border: `1px solid ${msg.role === 'assistant' ? '#262626' : '#FFFFFF'}`,
                                     borderRadius: msg.role === 'assistant'
                                         ? '4px 12px 12px 12px'
                                         : '12px 4px 12px 12px',
@@ -117,13 +117,13 @@ export default function ChatPanel() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2 items-center">
                         <div
                             className="w-6 h-6 rounded-full flex items-center justify-center"
-                            style={{ background: '#1e3a5a' }}
+                            style={{ background: '#171717' }}
                         >
                             <Bot size={11} style={{ color: C.blue }} />
                         </div>
                         <div
                             className="px-3 py-2 rounded-xl flex items-center gap-1"
-                            style={{ background: C.aiBubbleBg, border: `1px solid #333` }}
+                            style={{ background: C.aiBubbleBg, border: `1px solid #262B36` }}
                         >
                             {[0, 1, 2].map(i => (
                                 <div
@@ -142,7 +142,7 @@ export default function ChatPanel() {
             <div className="px-3 py-2.5 flex-shrink-0" style={{ borderTop: `1px solid ${C.border}` }}>
                 <div
                     className="flex items-end gap-2 rounded-lg px-3 py-2"
-                    style={{ background: C.inputBg, border: `1px solid #333` }}
+                    style={{ background: C.inputBg, border: `1px solid #262626` }}
                 >
                     <textarea
                         value={inputText}
@@ -163,7 +163,7 @@ export default function ChatPanel() {
                             onClick={toggleMic}
                             className="p-1.5 rounded-md flex-shrink-0 transition-colors"
                             style={{
-                                background: isListening ? '#7f1d1d' : '#252525',
+                                background: isListening ? '#7f1d1d' : '#161A22',
                                 color: isListening ? '#fca5a5' : C.muted,
                             }}
                             title={isListening ? 'Stop' : 'Voice input'}
@@ -175,7 +175,7 @@ export default function ChatPanel() {
                         onClick={handleSend}
                         disabled={!inputText.trim() || isAITyping}
                         className="p-1.5 rounded-md flex-shrink-0 transition-opacity disabled:opacity-30"
-                        style={{ background: C.blue, color: '#fff' }}
+                        style={{ background: C.blue, color: '#050505' }}
                     >
                         <Send size={13} />
                     </button>

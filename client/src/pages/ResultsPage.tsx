@@ -27,6 +27,15 @@ import {
 } from "../lib/api";
 import { useInterview } from "../context/InterviewContext";
 import {
+  ACCENT,
+  AuroraBackground,
+  auroraTokens,
+  DISPLAY,
+  GRADIENT,
+  GradientText,
+  Spotlight,
+} from "../components/aurora";
+import {
   QUESTION_RESOURCES,
   getResourcesForWeakPoint,
   type Resource,
@@ -56,12 +65,12 @@ function ScoreRing({ score, size = 140 }: { score: number; size?: number }) {
   const offset = circ - (score / 100) * circ;
   const color =
     score >= 80
-      ? "#00FFFF"
+      ? "#10b981"
       : score >= 60
-        ? "#FFD700"
+        ? "#84cc16"
         : score >= 40
-          ? "#FF8C00"
-          : "#FF4444";
+          ? "#f59e0b"
+          : "#ef4444";
 
   return (
     <div
@@ -74,7 +83,7 @@ function ScoreRing({ score, size = 140 }: { score: number; size?: number }) {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#1e2d42"
+          stroke="rgba(255,255,255,0.1)"
           strokeWidth={10}
         />
         <motion.circle
@@ -324,7 +333,8 @@ function LearningResources({
 export default function ResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { getSessionData, resetSession } = useInterview();
+  const { getSessionData, resetSession, isDark } = useInterview();
+  const t = auroraTokens(isDark);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -403,18 +413,15 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-electric-cyan to-neon-purple flex items-center justify-center mx-auto animate-pulse">
-            <BarChart size={32} className="text-black" />
+      <div style={{ background: t.bg, color: t.text, minHeight: "100vh" }} className="flex items-center justify-center">
+        <AuroraBackground dark={isDark} />
+        <div className="relative z-10 text-center space-y-4">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto animate-pulse" style={{ background: GRADIENT }}>
+            <BarChart size={32} className="text-white dark:text-black" />
           </div>
-          <h2 className="text-2xl font-bold text-[var(--text)]">
-            Generating Your Report
-          </h2>
-          <p className="text-[var(--text-muted)]">
-            Gemini AI is analyzing your interview session...
-          </p>
-          <div className="flex items-center justify-center gap-2 text-electric-cyan">
+          <h2 className="text-2xl font-bold" style={{ fontFamily: DISPLAY }}>Generating Your Report</h2>
+          <p style={{ color: t.muted }}>Our AI is analyzing your interview session...</p>
+          <div className="flex items-center justify-center gap-2" style={{ color: ACCENT.cyan }}>
             <Loader2 size={16} className="animate-spin" />
             <span className="text-sm">This may take 15–30 seconds</span>
           </div>
@@ -431,22 +438,27 @@ export default function ResultsPage() {
     RECOMMENDATION_COLORS["Maybe"];
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] dark:cyber-grid-bg py-12 px-4">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div style={{ background: t.bg, color: t.text, minHeight: "100vh", fontFamily: "Inter, system-ui, sans-serif" }} className="py-12 px-4">
+      <AuroraBackground dark={isDark} />
+      <Spotlight dark={isDark} />
+      <div className="relative z-10 max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <motion.div
           className="text-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full dark:bg-electric-cyan/10 bg-blue-50 dark:text-electric-cyan text-apple-blue border dark:border-electric-cyan/30 border-blue-200 text-sm font-semibold">
+          <div
+            className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-sm font-semibold"
+            style={{ background: t.panel, border: `1px solid ${t.borderStrong}`, color: ACCENT.cyan }}
+          >
             <Trophy size={14} />
             Interview Complete
           </div>
-          <h1 className="text-4xl font-black text-[var(--text)] mb-2">
-            Your Performance Report
+          <h1 className="font-bold mb-3" style={{ fontFamily: DISPLAY, fontSize: "clamp(2.25rem,5vw,3.25rem)", lineHeight: 1.02 }}>
+            Your <GradientText>Performance</GradientText> Report
           </h1>
-          <p className="text-[var(--text-muted)] max-w-xl mx-auto">
+          <p className="max-w-xl mx-auto" style={{ color: t.muted }}>
             {evaluation.summary}
           </p>
           {error && (
@@ -521,7 +533,7 @@ export default function ResultsPage() {
           <h2 className="font-bold text-[var(--text)] mb-5 flex items-center gap-2">
             <Target
               size={16}
-              className="dark:text-electric-cyan text-apple-blue"
+              style={{ color: "#10E0A0" }}
             />
             Section Breakdown
           </h2>
@@ -529,22 +541,22 @@ export default function ResultsPage() {
             <MetricBar
               label="MCQ & Theory"
               value={evaluation.sectionScores.mcq}
-              color="linear-gradient(90deg, #00FFFF, #00CCCC)"
+              color="linear-gradient(90deg, #10E0A0, #059669)"
             />
             <MetricBar
               label="Coding"
               value={evaluation.sectionScores.coding}
-              color="linear-gradient(90deg, #B026FF, #7B00FF)"
+              color="linear-gradient(90deg, #A3E635, #65A30D)"
             />
             <MetricBar
               label="Communication"
               value={evaluation.sectionScores.communication}
-              color="linear-gradient(90deg, #00FFFF, #B026FF)"
+              color="linear-gradient(90deg, #10E0A0, #A3E635)"
             />
             <MetricBar
               label="Resume Depth"
               value={evaluation.sectionScores.resumeDepth}
-              color="linear-gradient(90deg, #FFD700, #FF8C00)"
+              color="linear-gradient(90deg, #2DD4BF, #0D9488)"
             />
             <MetricBar
               label="Behavioral (STAR)"
@@ -552,7 +564,7 @@ export default function ResultsPage() {
                 evaluation.sectionScores.behavioral ??
                 evaluation.sectionScores.communication
               }
-              color="linear-gradient(90deg, #a78bfa, #6366f1)"
+              color="linear-gradient(90deg, #34D399, #10B981)"
             />
           </div>
         </motion.div>
@@ -567,7 +579,7 @@ export default function ResultsPage() {
           <h2 className="font-bold text-[var(--text)] mb-5 flex items-center gap-2">
             <Code2
               size={16}
-              className="dark:text-electric-cyan text-apple-blue"
+              style={{ color: "#10E0A0" }}
             />
             Code Quality Analysis
           </h2>
@@ -580,12 +592,12 @@ export default function ResultsPage() {
             <MetricBar
               label="Efficiency (Big-O)"
               value={evaluation.codeQuality.efficiency}
-              color="#00FFFF"
+              color="#10E0A0"
             />
             <MetricBar
               label="Readability"
               value={evaluation.codeQuality.readability}
-              color="#B026FF"
+              color="#A3E635"
             />
           </div>
           <p className="text-sm text-[var(--text-muted)] dark:bg-cyber-navy bg-gray-50 p-3 rounded-xl mt-2 border border-[var(--border)]">

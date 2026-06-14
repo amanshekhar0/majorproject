@@ -1,14 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { Request, Response } from "express";
-import OpenAI from "openai";
-
-const getGrok = () => {
-  const key = process.env.GROQ_API_KEY || process.env.XAI_API_KEY;
-  if (!key) throw new Error("GROQ_API_KEY is not set in .env");
-  return new OpenAI({ apiKey: key, baseURL: "https://api.groq.com/openai/v1" });
-};
+import { createChatCompletion } from "../aiClient";
 
 interface CodeSubmission {
   language: string;
@@ -106,14 +97,11 @@ Provide a comprehensive evaluation. Respond ONLY with valid JSON:
   "nextSteps": "<What the candidate should study or practice>"
 }`;
 
-    const client = getGrok();
-    const result = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+    const text = await createChatCompletion({
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
+      max_tokens: 2000,
     });
-
-    const text = result.choices[0]?.message?.content || "";
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       res.status(500).json({ error: "Failed to generate evaluation report" });

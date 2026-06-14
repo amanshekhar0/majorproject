@@ -8,6 +8,7 @@ const LANGUAGES = [
     { id: 'java', label: 'Java', monacoLang: 'java' },
     { id: 'cpp', label: 'C++', monacoLang: 'cpp' },
     { id: 'javascript', label: 'JavaScript', monacoLang: 'javascript' },
+    { id: 'sql', label: 'SQL', monacoLang: 'sql' },
 ];
 
 const DEFAULT_CODE: Record<string, string> = {
@@ -15,19 +16,20 @@ const DEFAULT_CODE: Record<string, string> = {
     java: '// Write your solution here\npublic class Solution {\n    \n}\n',
     cpp: '// Write your solution here\n#include <iostream>\nusing namespace std;\n\nint main() {\n    \n    return 0;\n}\n',
     javascript: '// Write your solution here\n\nfunction solution() {\n    \n}\n',
+    sql: '-- Write your SQL query here\n\n',
 };
 
 const C = {
-    toolbar: '#181818',
-    border: '#2a2a2a',
-    editor: '#1e1e1e',
-    console: '#141414',
-    text: '#e5e5e5',
-    muted: '#777',
-    blue: '#3b82f6',
-    green: '#22c55e',
+    toolbar: '#0C0C0C',
+    border: '#1F1F1F',
+    editor: '#050505',
+    console: '#0C0C0C',
+    text: '#F5F5F5',
+    muted: '#A3A3A3',
+    blue: '#FFFFFF',
+    green: '#10b981',
     red: '#ef4444',
-    dropdown: '#222',
+    dropdown: '#171717',
 };
 
 export default function CodingPanel() {
@@ -40,12 +42,24 @@ export default function CodingPanel() {
 
     useEffect(() => {
         if (currentQuestion?.starterCode) {
-            const starter = currentQuestion.starterCode[language] || currentQuestion.starterCode['python'] || '';
-            setCode(starter);
+            // Auto-detect SQL vs general DSA
+            if (currentQuestion.starterCode['sql']) {
+                if (language !== 'sql') setLanguage('sql');
+                setCode(currentQuestion.starterCode['sql']);
+            } else {
+                if (language === 'sql') setLanguage('python'); // Switch out of SQL
+                const starter = currentQuestion.starterCode[language === 'sql' ? 'python' : language] || currentQuestion.starterCode['python'] || '';
+                setCode(starter);
+            }
         } else if (!code) {
             setCode(DEFAULT_CODE[language] || '');
         }
     }, [currentQuestion?.id, language]);
+
+    const isSqlQuestion = !!currentQuestion?.starterCode?.['sql'];
+    const availableLanguages = isSqlQuestion 
+        ? LANGUAGES.filter(l => l.id === 'sql') 
+        : LANGUAGES.filter(l => l.id !== 'sql');
 
     const handleLanguageChange = (langId: string) => {
         setLanguage(langId);
@@ -71,7 +85,7 @@ export default function CodingPanel() {
                     <button
                         onClick={() => setLangDropdown(!langDropdown)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors hover:opacity-80"
-                        style={{ background: '#252525', color: C.text, border: `1px solid ${C.border}` }}
+                        style={{ background: '#171717', color: C.text, border: `1px solid ${C.border}` }}
                     >
                         <span
                             className="w-2 h-2 rounded-full"
@@ -92,14 +106,14 @@ export default function CodingPanel() {
                             className="absolute top-full left-0 mt-1 w-40 rounded-md shadow-xl z-30 overflow-hidden"
                             style={{ background: C.dropdown, border: `1px solid ${C.border}` }}
                         >
-                            {LANGUAGES.map(lang => (
+                            {availableLanguages.map(lang => (
                                 <button
                                     key={lang.id}
                                     onClick={() => handleLanguageChange(lang.id)}
                                     className="w-full text-left px-3 py-2 text-xs transition-colors hover:opacity-80"
                                     style={{
                                         color: lang.id === language ? C.blue : C.text,
-                                        background: lang.id === language ? '#1e2a3a' : 'transparent',
+                                        background: lang.id === language ? 'rgba(255,255,255,0.08)' : 'transparent',
                                         fontWeight: lang.id === language ? 600 : 400,
                                     }}
                                 >
@@ -141,7 +155,7 @@ export default function CodingPanel() {
                     onClick={submitCode}
                     disabled={isRunning}
                     className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-xs font-semibold transition-opacity disabled:opacity-40 hover:opacity-80"
-                    style={{ background: '#252525', color: C.text, border: `1px solid ${C.border}` }}
+                    style={{ background: '#ffffff', color: '#050505', border: 'none' }}
                 >
                     <Send size={12} />
                     Submit
@@ -204,7 +218,7 @@ export default function CodingPanel() {
                                 color: terminalOutput.includes('[Error]') || terminalOutput.includes('[Network Error]')
                                     ? C.red
                                     : terminalOutput.includes('⏳')
-                                        ? '#60a5fa'
+                                        ? '#34D399'
                                         : '#86efac',
                             }}
                         >

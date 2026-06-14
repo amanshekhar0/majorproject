@@ -5,15 +5,15 @@ export default {
     theme: {
         extend: {
             colors: {
-                'cyber-black': '#0B0F19',
-                'cyber-navy': '#0D1526',
-                'cyber-dark': '#111827',
-                'electric-cyan': '#00FFFF',
-                'neon-purple': '#B026FF',
-                'neon-purple-dim': '#7B1FA2',
-                'off-white': '#F5F5F7',
-                'soft-gray': '#E8E8ED',
-                'apple-blue': '#0071E3',
+                'cyber-black': '#050505',
+                'cyber-navy': '#0C0C0C',
+                'cyber-dark': '#121212',
+                'electric-cyan': '#FFFFFF',
+                'neon-purple': '#E5E5E5',
+                'neon-purple-dim': '#737373',
+                'off-white': '#FAFAFA',
+                'soft-gray': '#E5E5E5',
+                'apple-blue': '#FFFFFF',
             },
             fontFamily: {
                 sans: ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
@@ -28,8 +28,8 @@ export default {
             },
             keyframes: {
                 'glow-pulse': {
-                    '0%, 100%': { boxShadow: '0 0 5px #00FFFF, 0 0 10px #00FFFF' },
-                    '50%': { boxShadow: '0 0 20px #00FFFF, 0 0 40px #00FFFF, 0 0 80px #00FFFF' },
+                    '0%, 100%': { boxShadow: '0 0 5px #FFFFFF, 0 0 10px #FFFFFF' },
+                    '50%': { boxShadow: '0 0 20px #FFFFFF, 0 0 40px #FFFFFF, 0 0 80px #FFFFFF' },
                 },
                 'float': {
                     '0%, 100%': { transform: 'translateY(0px)' },
@@ -49,14 +49,14 @@ export default {
                 },
             },
             backgroundImage: {
-                'cyber-grid': `linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px), 
-                        linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px)`,
-                'cyber-gradient': 'linear-gradient(135deg, #0B0F19 0%, #0D1526 50%, #1a0a2e 100%)',
-                'neon-border': 'linear-gradient(90deg, #00FFFF, #B026FF, #00FFFF)',
+                'cyber-grid': `linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px)`,
+                'cyber-gradient': 'linear-gradient(135deg, #050505 0%, #0C0C0C 50%, #171717 100%)',
+                'neon-border': 'linear-gradient(90deg, #FFFFFF, #737373, #E5E5E5)',
             },
             boxShadow: {
-                'neon-cyan': '0 0 20px rgba(0, 255, 255, 0.3), 0 0 40px rgba(0, 255, 255, 0.1)',
-                'neon-purple': '0 0 20px rgba(176, 38, 255, 0.3), 0 0 40px rgba(176, 38, 255, 0.1)',
+                'neon-cyan': '0 0 20px rgba(255, 255, 255, 0.12), 0 0 40px rgba(255, 255, 255, 0.04)',
+                'neon-purple': '0 0 20px rgba(229, 229, 229, 0.12), 0 0 40px rgba(229, 229, 229, 0.04)',
                 'apple': '0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.06)',
                 'apple-lg': '0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04)',
             },

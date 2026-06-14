@@ -29,7 +29,7 @@ export default function ProctorOverlay({
     <>
       {/* PIP Webcam Feed */}
       <div className="fixed bottom-4 right-4 z-[9999] group">
-        <div className="w-40 h-28 rounded-2xl overflow-hidden border-2 border-[#3b82f6]/50 shadow-[0_0_20px_rgba(59,130,246,0.2)] relative bg-black">
+        <div className="w-40 h-28 rounded-2xl overflow-hidden border-2 border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.08)] relative bg-black">
           <video
             ref={videoRef}
             autoPlay
