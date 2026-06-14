@@ -20,7 +20,8 @@
         "noUnusedParameters": false,
         "noFallthroughCasesInSwitch": true,
         "types": [
-            "dom-speech-recognition"
+            "dom-speech-recognition",
+            "vite/client"
         ]
     },
     "include": [
