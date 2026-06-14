@@ -89,17 +89,26 @@ const connectDB = async () => {
   }
 };
 
-// Start listening immediately; the DB connects in the background.
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📱 Environment: ${process.env.NODE_ENV}`);
-});
+// Start listening only when not in a serverless environment (e.g., Vercel)
+let server: any = null;
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+  server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📱 Environment: ${process.env.NODE_ENV}`);
+  });
+} else {
+  console.log("ℹ️ Server running in serverless environment");
+}
 connectDB();
 
 // Release the port promptly on reload/shutdown so dev-watch restarts
 // (tsx) don't hit EADDRINUSE.
 const shutdown = () => {
-  server.close(() => process.exit(0));
+  if (server) {
+    server.close(() => process.exit(0));
+  } else {
+    process.exit(0);
+  }
   setTimeout(() => process.exit(0), 1500).unref();
 };
 process.on("SIGTERM", shutdown);
