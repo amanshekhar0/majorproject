@@ -49,6 +49,22 @@ app.use("/api/code", codeRoutes);
 app.use("/api/results", resultsRoutes);
 app.use("/api/user", userRoutes);
 
+// Welcome / Root endpoint
+app.get("/", (_req, res) => {
+  res.json({
+    status: "online",
+    message: "Welcome to the AI Interview Platform Backend API!",
+    health: "/health",
+    endpoints: {
+      resume: "/api/resume",
+      interview: "/api/interview",
+      code: "/api/code",
+      results: "/api/results",
+      user: "/api/user",
+    },
+  });
+});
+
 // Health check
 app.get("/health", (_req, res) => {
   res.json({
