@@ -34,7 +34,18 @@ const allowedOrigins = [
 // Middleware
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (incomingOrigin, callback) => {
+      // Allow non-browser requests (e.g., server-to-server, curl) which have no origin
+      if (!incomingOrigin) return callback(null, true);
+      // Exact match against allowed origins from env + defaults
+      if (allowedOrigins.includes(incomingOrigin)) return callback(null, true);
+      // Allow all origins when explicitly enabled via env var (use with caution)
+      if ((process.env.ALLOW_ALL_ORIGINS || "").toLowerCase() === "true") {
+        return callback(null, true);
+      }
+      // Otherwise reject CORS for this origin
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
